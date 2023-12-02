@@ -1,16 +1,115 @@
-<!DOCTYPE html>
-<html><head>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+import React, { useState, useEffect, useRef } from 'react';
 
-    <title>FCC: Drum Machine</title>
-  <script src="chrome-extension://nngceckbapebfimnlniiiahkandclblb/content/fido2/page-script.js"></script></head>
-  <body>
-    <div id="root"><div class="inner-container" id="drum-machine"><div class="pad-bank"><div class="drum-pad" id="Heater-1" style="background-color: grey; margin-top: 10px; box-shadow: black 3px 3px 5px;"><audio class="clip" id="Q" src="https://s3.amazonaws.com/freecodecamp/drums/Heater-1.mp3"></audio>Q</div><div class="drum-pad" id="Heater-2" style="background-color: grey; margin-top: 10px; box-shadow: black 3px 3px 5px;"><audio class="clip" id="W" src="https://s3.amazonaws.com/freecodecamp/drums/Heater-2.mp3"></audio>W</div><div class="drum-pad" id="Heater-3" style="background-color: grey; margin-top: 10px; box-shadow: black 3px 3px 5px;"><audio class="clip" id="E" src="https://s3.amazonaws.com/freecodecamp/drums/Heater-3.mp3"></audio>E</div><div class="drum-pad" id="Heater-4" style="background-color: grey; margin-top: 10px; box-shadow: black 3px 3px 5px;"><audio class="clip" id="A" src="https://s3.amazonaws.com/freecodecamp/drums/Heater-4_1.mp3"></audio>A</div><div class="drum-pad" id="Clap" style="background-color: grey; margin-top: 10px; box-shadow: black 3px 3px 5px;"><audio class="clip" id="S" src="https://s3.amazonaws.com/freecodecamp/drums/Heater-6.mp3"></audio>S</div><div class="drum-pad" id="Open-HH" style="background-color: grey; margin-top: 10px; box-shadow: black 3px 3px 5px;"><audio class="clip" id="D" src="https://s3.amazonaws.com/freecodecamp/drums/Dsc_Oh.mp3"></audio>D</div><div class="drum-pad" id="Kick-n'-Hat" style="background-color: grey; margin-top: 10px; box-shadow: black 3px 3px 5px;"><audio class="clip" id="Z" src="https://s3.amazonaws.com/freecodecamp/drums/Kick_n_Hat.mp3"></audio>Z</div><div class="drum-pad" id="Kick" style="background-color: grey; margin-top: 10px; box-shadow: black 3px 3px 5px;"><audio class="clip" id="X" src="https://s3.amazonaws.com/freecodecamp/drums/RP4_KICK_1.mp3"></audio>X</div><div class="drum-pad" id="Closed-HH" style="background-color: grey; margin-top: 10px; box-shadow: black 3px 3px 5px;"><audio class="clip" id="C" src="https://s3.amazonaws.com/freecodecamp/drums/Cev_H2.mp3"></audio>C</div></div><div class="logo"><div class="inner-logo ">FCC&nbsp;</div><i class="inner-logo fa fa-free-code-camp"></i></div><div class="controls-container"><div class="control"><p>Power</p><div class="select"><div class="inner" style="float: right;"></div></div></div><p id="display">&nbsp;</p><div class="volume-slider"><input max="1" min="0" step="0.01" type="range" value="0.3"></div><div class="control"><p>Bank</p><div class="select"><div class="inner" style="float: left;"></div></div></div></div></div></div>
+const App = () => {
+  const [breakLength, setBreakLength] = useState(5);
+  const [sessionLength, setSessionLength] = useState(25);
+  const [timerLabel, setTimerLabel] = useState('Session');
+  const [timeLeft, setTimeLeft] = useState(sessionLength * 60);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [isSession, setIsSession] = useState(true);
+  const audioRef = useRef(null);
 
-    <script crossorigin="" src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-    <script crossorigin="" src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
-    <script src="bundle.js"></script>
-  
+  const handleReset = () => {
+    setBreakLenght(5);
+    setSessionLength(25);
+    setTimerLabel('Session');
+    setTimeLeft(25 * 60);
+    setTimerRunning(false);
+    setIsSession(true);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+  };
 
-<button id="gpt-text-summarize-button" style="display: none;"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20128%20128%22%3E%0A%20%20%20%20%3Cg%20fill%3D%22none%22%20fill-rule%3D%22nonzero%22%20transform%3D%22translate(5%205)%22%3E%0A%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%2259%22%20cy%3D%2259%22%20r%3D%2259%22%20fill%3D%22%2310A37F%22%20stroke%3D%22%2310A37F%22%20stroke-width%3D%229%22%20%2F%3E%0A%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22%23E5E7EB%22%0A%20%20%20%20%20%20%20%20%20%20%20%20d%3D%22M76.397%2067.004c-1.545%205.815-5.642%208.127-10.356%209.47-.464.148-.386.595-.386.595l.695%204.623s.077.373.696.298C83.66%2080.2%2094.714%2068.047%2092.78%2053.285c-2.01-10.215-10.356-14.167-17.93-13.123-7.652%201.193-12.908%208.053-11.67%2015.434%201.004%206.561%206.646%2011.184%2013.215%2011.408Z%22%20%2F%3E%0A%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22%23FFF%22%0A%20%20%20%20%20%20%20%20%20%20%20%20d%3D%22M26.16%2055.596c1.005%206.487%206.722%2011.11%2013.211%2011.408-1.622%205.815-5.562%208.127-10.352%209.47-.464.148-.387.595-.387.595l.773%204.623s.077.373.695.298c16.534-1.79%2027.736-13.943%2025.65-28.705-1.93-10.215-10.198-14.167-17.846-13.123C30.254%2041.355%2025%2048.215%2026.16%2055.596Z%22%20%2F%3E%0A%20%20%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E"></button></body></html>
+  const handleBreakIncrement = () => {
+    if (breakLength < 60) {
+      setBreakLength(breakLength + 1);
+    }
+  };
+
+  const handleBreakDecrement = () => {
+    if (breakLength > 1) {
+      setBreakLength(breakLength - 1);
+    }
+  };
+
+  const handleSessionIncrement = () => {
+    if (sessionLength < 60) {
+      setSessionLength(sessionLength + 1);
+      setTimeLeft((sessionLength + 1) * 60);
+    }
+  };
+
+  const handleSessionDecrement = () => {
+    if (sessionLength > 1) {
+      setSessionLength(sessionLength - 1);
+      setTimeLeft((sessionLength - 1) * 60);
+    }
+  };
+
+  const toggleTimer = () => {
+    setTimerRunning(!timerRunning);
+  };
+
+  useEffect(() => {
+    let countdown;
+    if (timerRunning && timeLeft > 0) {
+      countdown = setInterval(() => {
+        setTimeLeft((prevTime) => prevTime - 1);
+      }, 1000);
+    } else if (timeLeft === 0) {
+      if (audioRef.current) {
+        audioRef.current.play();
+      }
+      setIsSession(!isSession);
+      if (isSession) {
+        setTimerLabel('Break');
+        setTimeLeft(breakLength * 60);
+      } else {
+        setTimerLabel('Session');
+        setTimeLeft(sessionLength * 60);
+      }
+    }
+
+    return () => clearInterval(countdown);
+  }, [timerRunning, timeLeft, isSession, breakLength, sessionLength]);
+
+  const formatTime = (time) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  };
+
+  return (
+    <div className="App">
+      <div id="break-label">Break Length</div>
+      <div id="session-label">Session Length</div>
+      
+      {/* Break Controls */}
+      <button id="break-decrement" onClick={handleBreakDecrement}>-</button>
+      <div id="break-length">{breakLength}</div>
+      <button id="break-increment" onClick={handleBreakIncrement}>+</button>
+      
+      {/* Session Controls */}
+      <button id="session-decrement" onClick={handleSessionDecrement}>-</button>
+      <div id="session-length">{sessionLength}</div>
+      <button id="session-increment" onClick={handleSessionIncrement}>+</button>
+      
+      {/* Timer */}
+      <div id="timer-label">{timerLabel}</div>
+      <div id="time-left">{formatTime(timeLeft)}</div>
+      
+      {/* Start/Stop Button */}
+      <button id="start_stop" onClick={toggleTimer}>Start/Stop</button>
+      
+      {/* Reset Button */}
+      <button id="reset" onClick={handleReset}>Reset</button>
+      
+      {/* Audio Element */}
+      <audio id="beep" ref={audioRef} src="https://www.soundjay.com/button/beep-07.wav" />
+    </div>
+  );
+};
+
+export default App;
