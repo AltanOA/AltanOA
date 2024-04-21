@@ -7,7 +7,7 @@ My unity profile:
 
 As my hobbies I play chess.
 My chess accounts:
-          https://www.chess.com/member/altan_oa
+          https://www.chess.com/member/altan_oa / 
           https://lichess.org/@/alomah
 
 I am also good at English. My level is like B2 / B2+, studying C1 currently.
